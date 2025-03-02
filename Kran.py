@@ -41,14 +41,14 @@ def load_image(path, size):
 
 # Попытка загрузить пользовательский фон
 try:
-    background_image = pygame.image.load("background.png").convert()  # Замените "background.png" на путь к вашему файлу
+    background_image = pygame.image.load("image/backgrounds/backgroundcutscene2.png").convert()  # Замените "background.png" на путь к вашему файлу
     background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))  # Масштабируем фон
     use_background_image = True
 except FileNotFoundError:
     use_background_image = False  # Если файл не найден, используем цвет по умолчанию
 
 # Игрок
-player_image = load_image("icon.png", (70, 70))  # Замените "player.png" на свой файл
+player_image = load_image("image/icon.png", (70, 70))  # Замените "player.png" на свой файл
 player = pygame.Rect(SCREEN_WIDTH // 2 - 20, SCREEN_HEIGHT - 50, 40, 40)
 player_speed = 5
 
@@ -67,7 +67,7 @@ birds = []
 bird_spawn_timer = 0
 bird_spawn_delay = 1000  # В миллисекундах
 bird_speed = 3
-bird_image = load_image("bird.png", (BIRD_SIZE+100, BIRD_SIZE-50))  # Замените "bird.png" на свой файл
+bird_image = load_image("image/tuchi/tucha1.png", (BIRD_SIZE+100, BIRD_SIZE-50))  # Замените "bird.png" на свой файл
 
 def spawn_bird():
     bird_x = random.choice([-BIRD_SIZE, SCREEN_WIDTH])
