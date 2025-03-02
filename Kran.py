@@ -8,7 +8,7 @@ from pathlib import Path
 pygame.init()
 
 # Установка логотипа
-icon = pygame.image.load('icon.png')
+icon = pygame.image.load('image/icon.png')
 pygame.display.set_icon(icon)
 
 # Настройки экрана
