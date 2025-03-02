@@ -13,7 +13,7 @@ pygame.display.set_icon(icon)
 
 # Настройки экрана
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 1000
+SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Крановщик")
 
@@ -42,7 +42,7 @@ def load_image(path, size):
 # Попытка загрузить пользовательский фон
 try:
     background_image = pygame.image.load("image/backgrounds/backgroundcutscene2.png").convert()  # Замените "background.png" на путь к вашему файлу
-    background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))  # Масштабируем фон
+    background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH*3, SCREEN_HEIGHT))  # Масштабируем фон
     use_background_image = True
 except FileNotFoundError:
     use_background_image = False  # Если файл не найден, используем цвет по умолчанию
