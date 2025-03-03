@@ -12,8 +12,8 @@ icon = pygame.image.load('image/icon.png')
 pygame.display.set_icon(icon)
 
 # Настройки экрана
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1000
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Крановщик")
 
