@@ -65,7 +65,7 @@ birds = []
 bird_spawn_timer = 0
 bird_spawn_delay = 1000  # В миллисекундах
 bird_speed = 3
-bird_image = load_image("images/tuchi/tucha1.png", (BIRD_SIZE+100, BIRD_SIZE-50))  # Замените "bird.png" на свой файл
+bird_image = load_image("image/tuchi/tucha1.png", (BIRD_SIZE+100, BIRD_SIZE-50))  # Замените "bird.png" на свой файл
 
 def spawn_bird():
     bird_x = random.choice([-BIRD_SIZE, SCREEN_WIDTH])
