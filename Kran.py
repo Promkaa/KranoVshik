@@ -52,11 +52,13 @@ player = pygame.Rect(SCREEN_WIDTH // 2 - 20, SCREEN_HEIGHT - 50, 40, 40)
 player_speed = 5
 
 # Лестница
-ladder_left = pygame.Rect(SCREEN_WIDTH // 2 - LADDER_WIDTH // 2 - 10, 0, 10, LADDER_HEIGHT)
-ladder_right = pygame.Rect(SCREEN_WIDTH // 2 + LADDER_WIDTH // 2, 0, 10, LADDER_HEIGHT)
-rungs = []  # Перекладины
-for i in range(0, SCREEN_HEIGHT, RUNG_SPACING):
-    rungs.append(pygame.Rect(ladder_left.x, i, LADDER_WIDTH, 5))
+ladder_image_path = "image/ladder.png"  # Путь к изображению лестницы
+try:
+    ladder_image = load_image(ladder_image_path, ()) # в пустых скобках размеры лестницы, изменить, как будет лестница
+    ladder_rect = ladder_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+except FileNotFoundError:
+    ladder_image = None
+    ladder_rect = pygame.Rect(SCREEN_WIDTH // 2 - LADDER_WIDTH // 2, 0, LADDER_WIDTH, LADDER_HEIGHT)
 
 # Кран
 crane = pygame.Rect(SCREEN_WIDTH // 2 - CRANE_SIZE // 2, -CRANE_SIZE, CRANE_SIZE, CRANE_SIZE)
@@ -65,13 +67,17 @@ birds = []
 bird_spawn_timer = 0
 bird_spawn_delay = 1000  # В миллисекундах
 bird_speed = 3
-bird_image = load_image("image/tuchi/tucha1.png", (BIRD_SIZE+100, BIRD_SIZE-50))  # Замените "bird.png" на свой файл
+bird_image_left = load_image("image/tuchi/tucha1.png", (BIRD_SIZE + 100, BIRD_SIZE - 50))  # Птица летит справа налево
+bird_image_right = pygame.transform.flip(bird_image_left, True, False)  # Отразим изображение для птицы, летящей слева направо
 
 def spawn_bird():
     bird_x = random.choice([-BIRD_SIZE, SCREEN_WIDTH])
     bird_y = random.randint(0, SCREEN_HEIGHT - BIRD_SIZE)
-    bird_direction = 1 if bird_x < 0 else -1
-    birds.append({"rect": pygame.Rect(bird_x, bird_y, BIRD_SIZE, BIRD_SIZE), "direction": bird_direction})
+    bird_direction = 1 if bird_x < 0 else -1  # Определяем направление полета
+    bird_image = bird_image_right if bird_direction == 1 else bird_image_left  # Выбираем изображение
+    birds.append({"rect": pygame.Rect(bird_x, bird_y, BIRD_SIZE, BIRD_SIZE),
+                  "direction": bird_direction,
+                  "image": bird_image})  # Добавляем изображение к птице
 
 # Функция для проверки столкновений
 def check_collision():
@@ -307,15 +313,11 @@ def game_loop(bird_spawn_timer, crane_color, crane):
         keys = pygame.key.get_pressed()
         if not game_over and not game_won:
             if keys[pygame.K_UP]:
-                for rung in rungs:
-                    if player.bottom >= rung.top and player.top <= rung.bottom:
-                        player.y -= player_speed
-                        break
+                if ladder_rect.top <= player.y and ladder_rect.bottom >= player.y:  # Проверяем, находится ли игрок на лестнице
+                    player.y -= player_speed
             if keys[pygame.K_DOWN]:
-                for rung in rungs:
-                    if player.top <= rung.bottom and player.bottom >= rung.top:
-                        player.y += player_speed
-                        break
+                if ladder_rect.top <= player.y and ladder_rect.bottom >= player.y:  # Проверяем, находится ли игрок на лестнице
+                    player.y += player_speed
 
         # Логика появления птиц
         bird_spawn_timer += clock.get_time()
@@ -349,17 +351,17 @@ def game_loop(bird_spawn_timer, crane_color, crane):
 
         # Отрисовка объектов
         # Лестница
-        pygame.draw.rect(screen, BLACK, ladder_left)
-        pygame.draw.rect(screen, BLACK, ladder_right)
-        for rung in rungs:
-            pygame.draw.rect(screen, BLACK, rung)
+        if ladder_image:  # Если изображение лестницы загружено
+            screen.blit(ladder_image, ladder_rect)
+        else:  # Если изображение не загружено, отрисовываем простую лестницу
+            pygame.draw.rect(screen, BLACK, ladder_rect)
 
         # Игрок
         screen.blit(player_image, player)
 
         # Птицы
         for bird in birds:
-            screen.blit(bird_image, bird["rect"])
+            screen.blit(bird["image"], bird["rect"])  # Используем изображение, назначенное для каждой птицы
 
         # Кран
         pygame.draw.rect(screen, crane_color, crane)
