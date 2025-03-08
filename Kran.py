@@ -103,8 +103,8 @@ def show_loading_screen():
     text = font.render("Загрузка...", True, (255, 255, 255))
     text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
 
-    progress_bar = pygame.Rect(200, 400, 400, 30)
-    fill_rect = pygame.Rect(200, 400, 0, 30)
+    progress_bar = pygame.Rect(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 100, 400, 30)
+    fill_rect = pygame.Rect(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 100, 400, 30)
 
     screen.fill((10, 10, 10))
     screen.blit(text, text_rect)
