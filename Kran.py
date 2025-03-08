@@ -130,24 +130,24 @@ def load_resources():
     fill_rect = show_loading_screen()
 
     # Загрузка фона
-    background = load_sprite_sheets('images/background_sprites/background_sprites_main_menu',
+    background = load_sprite_sheets('image/background_sprites/background_sprites_main_menu',
                                     lambda p: update_progress(fill_rect, p * 0.4))
 
     # Загрузка изображений кнопок
-    play = pygame.transform.scale(pygame.image.load('images/buttons/play.png'), (200, 80))
+    play = pygame.transform.scale(pygame.image.load('image/buttons/play.png'), (200, 80))
     update_progress(fill_rect, 0.45)
 
-    play_hover = pygame.transform.scale(pygame.image.load('images/buttons/play_hover.png'), (200, 80))
+    play_hover = pygame.transform.scale(pygame.image.load('image/buttons/play_hover.png'), (200, 80))
     update_progress(fill_rect, 0.5)
 
-    exit_btn = pygame.transform.scale(pygame.image.load('images/buttons/exit.png'), (200, 80))
+    exit_btn = pygame.transform.scale(pygame.image.load('image/buttons/exit.png'), (200, 80))
     update_progress(fill_rect, 0.55)
 
-    exit_hover = pygame.transform.scale(pygame.image.load('images/buttons/exit_hover.png'), (200, 80))
+    exit_hover = pygame.transform.scale(pygame.image.load('image/buttons/exit_hover.png'), (200, 80))
     update_progress(fill_rect, 0.6)
 
     # Загрузка звука
-    click_sound = pygame.mixer.Sound('sounds/click.mp3')
+    click_sound = pygame.mixer.Sound('music/click.mp3')
     update_progress(fill_rect, 0.65)
 
     # Проверка наличия видеоинтро
@@ -162,7 +162,7 @@ def load_resources():
         'exit_hover': exit_hover,
         'click_sound': click_sound,
         'has_intro': intro_exists,
-        'bg_menu_music': pygame.mixer.Sound('sounds/background_menu_music.mp3')
+        'bg_menu_music': pygame.mixer.Sound('music/background_menu_music.mp3')
     }
 
 
