@@ -31,7 +31,7 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 # Установка логотипа и названия
-icon = pygame.image.load('images/icon.png')
+icon = pygame.image.load('image/icon.png')
 pygame.display.set_icon(icon)
 pygame.display.set_caption("Крановщик")
 
@@ -47,7 +47,7 @@ except FileNotFoundError:
     use_background_image = False  # Если файл не найден, используем цвет по умолчанию
 
 # Игрок
-player_image = load_image("images/icon.png", (70, 70))  # Замените "player.png" на свой файл
+player_image = load_image("image/icon.png", (70, 70))  # Замените "player.png" на свой файл
 player = pygame.Rect(SCREEN_WIDTH // 2 - 20, SCREEN_HEIGHT - 50, 40, 40)
 player_speed = 5
 
@@ -130,24 +130,24 @@ def load_resources():
     fill_rect = show_loading_screen()
 
     # Загрузка фона
-    background = load_sprite_sheets('image/background_sprites/background_sprites_main_menu',
+    background = load_sprite_sheets('image/backgrounds/background_sprites_main_menu',
                                     lambda p: update_progress(fill_rect, p * 0.4))
 
     # Загрузка изображений кнопок
-    play = pygame.transform.scale(pygame.image.load('image/buttons/play.png'), (200, 80))
+    play = pygame.transform.scale(pygame.image.load('image/button/play.png'), (200, 80))
     update_progress(fill_rect, 0.45)
 
-    play_hover = pygame.transform.scale(pygame.image.load('image/buttons/play_hover.png'), (200, 80))
+    play_hover = pygame.transform.scale(pygame.image.load('image/button/play_hover.png'), (200, 80))
     update_progress(fill_rect, 0.5)
 
-    exit_btn = pygame.transform.scale(pygame.image.load('image/buttons/exit.png'), (200, 80))
+    exit_btn = pygame.transform.scale(pygame.image.load('image/button/exit.png'), (200, 80))
     update_progress(fill_rect, 0.55)
 
-    exit_hover = pygame.transform.scale(pygame.image.load('image/buttons/exit_hover.png'), (200, 80))
+    exit_hover = pygame.transform.scale(pygame.image.load('image/button/exit_hover.png'), (200, 80))
     update_progress(fill_rect, 0.6)
 
     # Загрузка звука
-    click_sound = pygame.mixer.Sound('music/click.mp3')
+    click_sound = pygame.mixer.Sound('sounds/click.mp3')
     update_progress(fill_rect, 0.65)
 
     # Проверка наличия видеоинтро
