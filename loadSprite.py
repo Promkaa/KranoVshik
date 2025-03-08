@@ -2,7 +2,6 @@ import pygame
 from config import SCREEN_HEIGHT, SCREEN_WIDTH
 import os
 
-
 def load_sprite_sheets(folder_path, progress_callback):
     """Загрузка спрайтов фона с отображением прогресса"""
     frames = []

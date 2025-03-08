@@ -5,6 +5,7 @@ from ladder import ladder_rect, ladder_image
 from bird import birds, bird_speed, bird_spawn_delay, spawn_bird, bird_image_left, bird_image_right
 from check import check_collision, check_reach_crane
 
+
 try:
     background_image = pygame.image.load("image/backgrounds/backgroundcutscene2.png").convert()  # Замените "background.png" на путь к вашему файлу
     background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH*3, SCREEN_HEIGHT))  # Масштабируем фон

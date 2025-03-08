@@ -4,6 +4,7 @@ import cv2
 from pathlib import Path
 from config import SCREEN_HEIGHT, SCREEN_WIDTH, screen, clock
 
+
 def play_intro():
     """Воспроизведение видео-интро"""
     video_path = Path("intro.mp4")

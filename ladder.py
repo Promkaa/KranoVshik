@@ -2,6 +2,7 @@ import pygame
 from loadIMG import load_image
 from config import SCREEN_HEIGHT, SCREEN_WIDTH, LADDER_HEIGHT, LADDER_WIDTH
 
+
 # Лестница
 ladder_image_path = "image/ladder.png"  # Путь к изображению лестницы
 try:

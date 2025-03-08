@@ -1,5 +1,5 @@
 import pygame
-from config import SCREEN_HEIGHT, SCREEN_WIDTH, CRANE_COLOR, CRANE_SIZE, crane
+from config import SCREEN_HEIGHT, SCREEN_WIDTH, CRANE_COLOR, crane
 from intro import play_intro
 from loadScreen import load_resources
 from gameLoop import game_loop

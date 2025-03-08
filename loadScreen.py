@@ -4,6 +4,7 @@ from config import SCREEN_HEIGHT, SCREEN_WIDTH, screen
 from loadSprite import load_sprite_sheets
 
 
+
 def show_loading_screen():
     """Отображение экрана загрузки"""
     font = pygame.font.Font(None, 36)

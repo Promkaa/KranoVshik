@@ -15,7 +15,6 @@ def main_menu(resources):
         sound=resources['click_sound']
     )
 
-
     exit_button = ImageButton(
         x=-200, y=400,
         width=396, height=108,

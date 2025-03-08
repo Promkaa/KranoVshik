@@ -2,6 +2,7 @@ from player import player
 from bird import birds
 from config import crane
 
+
 # Функция для проверки столкновений
 def check_collision():
     for bird in birds:

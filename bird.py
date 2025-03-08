@@ -3,6 +3,7 @@ from config import BIRD_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT
 import pygame
 from loadIMG import load_image
 
+
 birds = []
 bird_spawn_timer = 0
 bird_spawn_delay = 1000  # В миллисекундах
