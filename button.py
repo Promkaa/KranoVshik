@@ -1,21 +1,25 @@
 import pygame
+
 class ImageButton:
-    def __init__(self, x, y, width, height, image_path, hover_image_path=None, sound_path=None):
+    def __init__(self, x, y, width, height,
+                 image=None, hover_image=None, sound=None):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
 
-        self.image = pygame.image.load(image_path)
+        # Обработка основного изображения
+        self.image = image or pygame.Surface((width, height))
         self.image = pygame.transform.scale(self.image, (width, height))
-        self.hover_image = self.image
 
-        if hover_image_path:
-            self.hover_image = pygame.image.load(hover_image_path)
-            self.hover_image = pygame.transform.scale(self.hover_image, (width, height))
+        # Обработка изображения для ховера
+        if hover_image:
+            self.hover_image = pygame.transform.scale(hover_image, (width, height))
+        else:
+            self.hover_image = self.image
 
+        self.sound = sound
         self.rect = self.image.get_rect(topleft=(x, y))
-        self.sound = pygame.mixer.Sound(sound_path) if sound_path else None
         self.is_hovered = False
 
     def draw(self, screen):

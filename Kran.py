@@ -1,47 +1,44 @@
 import pygame
 import sys
-import random
+import os
 import cv2
 from pathlib import Path
+from button import ImageButton
+import random
 
-# Инициализация Pygame
-pygame.init()
-
-# Установка логотипа
-icon = pygame.image.load('image/icon.png')
-pygame.display.set_icon(icon)
-
-# Настройки экрана
+# Константы
 SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1000
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Крановщик")
-
+SCREEN_HEIGHT = 1080
+BG_ANIMATION_SPEED = 100
+ANIMATION_SPEED = 15
+FPS = 60
 # Цвета
 BLUE = (135, 206, 250)  # Синий фон по умолчанию
 BLACK = (0, 0, 0)  # Цвет текста и кнопок
 WHITE = (255, 255, 255)  # Цвет текста кнопок
 CRANE_COLOR = (255, 165, 0)  # Оранжевый цвет для крана
 
-# Настройки игры
-FPS = 60
-clock = pygame.time.Clock()
-
 # Размеры объектов
-LADDER_WIDTH = 50
+LADDER_WIDTH = 20
 LADDER_HEIGHT = SCREEN_HEIGHT
 RUNG_SPACING = 40  # Расстояние между перекладинами
 BIRD_SIZE = 100
 CRANE_SIZE = 150
 
-# Загрузка изображений
-def load_image(path, size=None):
-    image = pygame.image.load(path).convert_alpha()
-    if size:
-        image = pygame.transform.scale(image, size)
-    return image
+# Инициализация
+pygame.init()
+pygame.mixer.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pygame.time.Clock()
+# Установка логотипа и названия
+icon = pygame.image.load('images/icon.png')
+pygame.display.set_icon(icon)
+pygame.display.set_caption("Крановщик")
 
-# Попытка загрузить пользовательский фон
+def load_image(path, size):
+    image = pygame.image.load(path).convert_alpha()
+    return pygame.transform.scale(image, size)
+
 try:
     background_image = pygame.image.load("image/backgrounds/backgroundcutscene2.png").convert()  # Замените "background.png" на путь к вашему файлу
     background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH*3, SCREEN_HEIGHT))  # Масштабируем фон
@@ -50,39 +47,31 @@ except FileNotFoundError:
     use_background_image = False  # Если файл не найден, используем цвет по умолчанию
 
 # Игрок
-player_image = load_image("image/icon.png", (70, 70))  # Замените "player.png" на свой файл
+player_image = load_image("images/icon.png", (70, 70))  # Замените "player.png" на свой файл
 player = pygame.Rect(SCREEN_WIDTH // 2 - 20, SCREEN_HEIGHT - 50, 40, 40)
 player_speed = 5
 
 # Лестница
-ladder_image_path = "image/ladder.png"  # Путь к изображению лестницы
-try:
-    ladder_image = load_image(ladder_image_path)
-    ladder_rect = ladder_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-except FileNotFoundError:
-    ladder_image = None
-    ladder_rect = pygame.Rect(SCREEN_WIDTH // 2 - LADDER_WIDTH // 2, 0, LADDER_WIDTH, LADDER_HEIGHT)
+ladder_left = pygame.Rect(SCREEN_WIDTH // 2 - LADDER_WIDTH // 2 - 10, 0, 10, LADDER_HEIGHT)
+ladder_right = pygame.Rect(SCREEN_WIDTH // 2 + LADDER_WIDTH // 2, 0, 10, LADDER_HEIGHT)
+rungs = []  # Перекладины
+for i in range(0, SCREEN_HEIGHT, RUNG_SPACING):
+    rungs.append(pygame.Rect(ladder_left.x, i, LADDER_WIDTH, 5))
 
 # Кран
 crane = pygame.Rect(SCREEN_WIDTH // 2 - CRANE_SIZE // 2, -CRANE_SIZE, CRANE_SIZE, CRANE_SIZE)
-
 # Птицы
 birds = []
 bird_spawn_timer = 0
 bird_spawn_delay = 1000  # В миллисекундах
 bird_speed = 3
-bird_image_left = load_image("image/bird/bird.gif", (BIRD_SIZE + 100, BIRD_SIZE - 50))  # Птица летит справа налево
-bird_image_right = pygame.transform.flip(bird_image_left, True, False)  # Отразим изображение для птицы, летящей слева направо
-
+bird_image = load_image("images/tuchi/tucha1.png", (BIRD_SIZE+100, BIRD_SIZE-50))  # Замените "bird.png" на свой файл
 
 def spawn_bird():
     bird_x = random.choice([-BIRD_SIZE, SCREEN_WIDTH])
     bird_y = random.randint(0, SCREEN_HEIGHT - BIRD_SIZE)
-    bird_direction = 1 if bird_x < 0 else -1  # Определяем направление полета
-    bird_image = bird_image_right if bird_direction == 1 else bird_image_left  # Выбираем изображение
-    birds.append({"rect": pygame.Rect(bird_x, bird_y, BIRD_SIZE, BIRD_SIZE),
-                  "direction": bird_direction,
-                  "image": bird_image})  # Добавляем изображение к птице
+    bird_direction = 1 if bird_x < 0 else -1
+    birds.append({"rect": pygame.Rect(bird_x, bird_y, BIRD_SIZE, BIRD_SIZE), "direction": bird_direction})
 
 # Функция для проверки столкновений
 def check_collision():
@@ -95,74 +84,206 @@ def check_collision():
 def check_reach_crane():
     return player.colliderect(crane)
 
-# Главное меню
-def main_menu():
-    font = pygame.font.Font(None, 74)
-    title_text = font.render("Крановщик", True, WHITE)
-    title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4))
+def load_sprite_sheets(folder_path, progress_callback):
+    """Загрузка спрайтов фона с отображением прогресса"""
+    frames = []
+    files = sorted([f for f in os.listdir(folder_path) if f.endswith('.png')])
+    total = len(files)
+    for i, file in enumerate(files):
+        img = pygame.image.load(os.path.join(folder_path, file)).convert_alpha()
+        img = pygame.transform.scale(img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        frames.append(img)
+        progress_callback((i + 1) / total)
+    return frames
 
-    button_font = pygame.font.Font(None, 50)
-    start_button = button_font.render("Начать игру", True, WHITE)
-    quit_button = button_font.render("Выйти", True, WHITE)
 
-    start_button_rect = start_button.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-    quit_button_rect = quit_button.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+def show_loading_screen():
+    """Отображение экрана загрузки"""
+    font = pygame.font.Font(None, 36)
+    text = font.render("Загрузка...", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
 
-    while True:
-        screen.fill(BLUE)
-        screen.blit(title_text, title_rect)
-        screen.blit(start_button, start_button_rect)
-        screen.blit(quit_button, quit_button_rect)
+    progress_bar = pygame.Rect(200, 400, 400, 30)
+    fill_rect = pygame.Rect(200, 400, 0, 30)
+
+    screen.fill((10, 10, 10))
+    screen.blit(text, text_rect)
+    pygame.draw.rect(screen, (255, 255, 255), progress_bar, 2)
+    pygame.display.flip()
+
+    return fill_rect
+
+
+def update_progress(fill_rect, progress):
+    """Обновление прогресс-бара"""
+    if progress > 1.0:
+        progress = 1.0
+    fill_rect.width = 400 * progress
+    pygame.draw.rect(screen, (0, 255, 0), fill_rect)
+    pygame.display.flip()
+    pygame.time.wait(10)
+    pygame.event.pump()
+
+
+def load_resources():
+    """Загрузка всех ресурсов с анимацией прогресса"""
+    fill_rect = show_loading_screen()
+
+    # Загрузка фона
+    background = load_sprite_sheets('images/background_sprites/background_sprites_main_menu',
+                                    lambda p: update_progress(fill_rect, p * 0.4))
+
+    # Загрузка изображений кнопок
+    play = pygame.transform.scale(pygame.image.load('images/buttons/play.png'), (200, 80))
+    update_progress(fill_rect, 0.45)
+
+    play_hover = pygame.transform.scale(pygame.image.load('images/buttons/play_hover.png'), (200, 80))
+    update_progress(fill_rect, 0.5)
+
+    exit_btn = pygame.transform.scale(pygame.image.load('images/buttons/exit.png'), (200, 80))
+    update_progress(fill_rect, 0.55)
+
+    exit_hover = pygame.transform.scale(pygame.image.load('images/buttons/exit_hover.png'), (200, 80))
+    update_progress(fill_rect, 0.6)
+
+    # Загрузка звука
+    click_sound = pygame.mixer.Sound('sounds/click.mp3')
+    update_progress(fill_rect, 0.65)
+
+    # Проверка наличия видеоинтро
+    intro_exists = Path("intro.mp4").exists()
+    update_progress(fill_rect, 1.0)
+
+    return {
+        'background': background,
+        'play': play,
+        'play_hover': play_hover,
+        'exit': exit_btn,
+        'exit_hover': exit_hover,
+        'click_sound': click_sound,
+        'has_intro': intro_exists,
+        'bg_menu_music': pygame.mixer.Sound('sounds/background_menu_music.mp3')
+    }
+
+
+def play_intro():
+    """Воспроизведение видео-интро"""
+    video_path = Path("intro.mp4")
+    if not video_path.exists():
+        return
+
+    cap = cv2.VideoCapture(str(video_path))
+    success, frame = cap.read()
+    skip_sound = pygame.mixer.Sound('sounds/click.mp3')
+    font = pygame.font.Font(None, 24)
+    blink_interval = 500
+    last_blink = 0
+    blink_visible = True
+
+    while success:
+        current_time = pygame.time.get_ticks()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                if start_button_rect.collidepoint(mouse_pos):
-                    play_intro()
-                    game_loop(
-                        bird_spawn_timer=0,
-                        crane_color=CRANE_COLOR,
-                        crane=crane
-                    )  # Передаем необходимые параметры
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    skip_sound.play()
+                    cap.release()
                     return
-                elif quit_button_rect.collidepoint(mouse_pos):
-                    pygame.quit()
-                    sys.exit()
 
-        pygame.display.flip()
-        clock.tick(FPS)
+        # Мерцание подсказки
+        if current_time - last_blink > blink_interval:
+            blink_visible = not blink_visible
+            last_blink = current_time
 
-# Воспроизведение видео-интро
-def play_intro():
-    video_path = Path("intro.mp4")  # Путь к видеофайлу в корневой папке
-    if not video_path.exists():
-        return  # Если видео не найдено, пропускаем интро
-
-    cap = cv2.VideoCapture(str(video_path))
-    success, frame = cap.read()
-    skip_intro = False
-
-    while success and not skip_intro:
+        # Отрисовка кадра
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.resize(frame, (SCREEN_WIDTH, SCREEN_HEIGHT))
         frame_surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
         screen.blit(frame_surface, (0, 0))
+
+        # Подсказка пропуска
+        if blink_visible:
+            skip_text = font.render("Нажмите ПРОБЕЛ для пропуска", True, (255, 255, 255))
+            screen.blit(skip_text, (SCREEN_WIDTH - skip_text.get_width() - 20, SCREEN_HEIGHT - 40))
+
         pygame.display.flip()
-
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_UP, pygame.K_DOWN):
-                    skip_intro = True  # Пропустить интро при нажатии "вверх" или "вниз"
-
-        clock.tick(30)  # Ограничение FPS для видео
+        clock.tick(30)
         success, frame = cap.read()
 
     cap.release()
 
-# Основной цикл игры
+
+def main_menu(resources):
+    """Главное меню"""
+    play_button = ImageButton(
+        x=-200, y=250,
+        width=396, height=108,
+        image=resources['play'],
+        hover_image=resources['play_hover'],
+        sound=resources['click_sound']
+    )
+
+
+    exit_button = ImageButton(
+        x=-200, y=400,
+        width=396, height=108,
+        image=resources['exit'],
+        hover_image=resources['exit_hover'],
+        sound=resources['click_sound']
+    )
+
+    TARGET_X = 50
+    resources['bg_menu_music'].play(-1)  # Зацикленное воспроизведение
+    while True:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.USEREVENT:
+                if event.button == play_button:
+                    return 'intro' if resources['has_intro'] else 'game'
+                elif event.button == exit_button:
+                    pygame.quit()
+                    sys.exit()
+            else:
+                play_button.handle_event(event)
+                exit_button.handle_event(event)
+
+        # Анимация кнопок
+        if play_button.rect.x < TARGET_X:
+            play_button.rect.x += ANIMATION_SPEED
+        if exit_button.rect.x < TARGET_X:
+            exit_button.rect.x += ANIMATION_SPEED
+
+        # Отрисовка
+        bg_frame = resources['background'][
+            (pygame.time.get_ticks() // BG_ANIMATION_SPEED) %
+            len(resources['background'])
+            ]
+        screen.blit(bg_frame, (0, 0))
+        play_button.draw(screen)
+        exit_button.draw(screen)
+
+        # Обновление состояний
+        mouse_pos = pygame.mouse.get_pos()
+        play_button.check_hover(mouse_pos)
+        exit_button.check_hover(mouse_pos)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+
+LADDER_WIDTH = 20
+LADDER_HEIGHT = SCREEN_HEIGHT
+RUNG_SPACING = 40  # Расстояние между перекладинами
+BIRD_SIZE = 100
+CRANE_SIZE = 150
+
 def game_loop(bird_spawn_timer, crane_color, crane):
     running = True
     game_over = False
@@ -186,11 +307,15 @@ def game_loop(bird_spawn_timer, crane_color, crane):
         keys = pygame.key.get_pressed()
         if not game_over and not game_won:
             if keys[pygame.K_UP]:
-                if ladder_rect.top <= player.y and ladder_rect.bottom >= player.y:  # Проверяем, находится ли игрок на лестнице
-                    player.y -= player_speed
+                for rung in rungs:
+                    if player.bottom >= rung.top and player.top <= rung.bottom:
+                        player.y -= player_speed
+                        break
             if keys[pygame.K_DOWN]:
-                if ladder_rect.top <= player.y and ladder_rect.bottom >= player.y:  # Проверяем, находится ли игрок на лестнице
-                    player.y += player_speed
+                for rung in rungs:
+                    if player.top <= rung.bottom and player.bottom >= rung.top:
+                        player.y += player_speed
+                        break
 
         # Логика появления птиц
         bird_spawn_timer += clock.get_time()
@@ -223,17 +348,18 @@ def game_loop(bird_spawn_timer, crane_color, crane):
             game_won = True
 
         # Отрисовка объектов
-        if ladder_image:  # Если изображение лестницы загружено
-            screen.blit(ladder_image, ladder_rect)
-        else:  # Если изображение не загружено, отрисовываем простую лестницу
-            pygame.draw.rect(screen, BLACK, ladder_rect)
+        # Лестница
+        pygame.draw.rect(screen, BLACK, ladder_left)
+        pygame.draw.rect(screen, BLACK, ladder_right)
+        for rung in rungs:
+            pygame.draw.rect(screen, BLACK, rung)
 
         # Игрок
         screen.blit(player_image, player)
 
         # Птицы
         for bird in birds:
-            screen.blit(bird["image"], bird["rect"])  # Используем изображение, назначенное для каждой птицы
+            screen.blit(bird_image, bird["rect"])
 
         # Кран
         pygame.draw.rect(screen, crane_color, crane)
@@ -251,6 +377,21 @@ def game_loop(bird_spawn_timer, crane_color, crane):
         pygame.display.flip()
         clock.tick(FPS)
 
-# Запуск игры
+
 if __name__ == "__main__":
-    main_menu()
+    # Загрузка ресурсов
+    resources = load_resources()
+
+    # Основной цикл состояний
+    state = 'main_menu'
+    while True:
+        if state == 'main_menu':
+            state = main_menu(resources)
+        elif state == 'intro':
+            play_intro()
+            state = 'game_loop'
+        elif state == 'game_loop':
+            game_loop(bird_spawn_timer=0,
+                      crane_color=CRANE_COLOR,
+                      crane=crane)
+            state = 'main_menu'
