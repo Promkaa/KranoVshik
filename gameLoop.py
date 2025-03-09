@@ -4,6 +4,7 @@ from player import player_image, player_speed, player
 from ladder import ladder_rect, ladder_image
 from bird import birds, bird_speed, bird_spawn_delay, spawn_bird, bird_image_left, bird_image_right
 from check import check_collision, check_reach_crane
+import sys
 
 
 try:
@@ -41,6 +42,9 @@ def game_loop(bird_spawn_timer, crane_color, crane):
             if keys[pygame.K_DOWN]:
                 if ladder_rect.top <= player.y and ladder_rect.bottom >= player.y:  # Проверяем, находится ли игрок на лестнице
                     player.y += player_speed
+            if keys[pygame.K_ESCAPE]:
+                pygame.quit()
+                sys.exit()
 
         # Логика появления птиц
         bird_spawn_timer += clock.get_time()
