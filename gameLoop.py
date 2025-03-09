@@ -35,6 +35,9 @@ def game_loop(bird_spawn_timer, crane_color, crane):
 
         # Логика движения игрока
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            pygame.quit()
+            sys.exit()
         if not game_over and not game_won:
             if keys[pygame.K_UP]:
                 if ladder_rect.top <= player.y and ladder_rect.bottom >= player.y:  # Проверяем, находится ли игрок на лестнице
@@ -42,9 +45,7 @@ def game_loop(bird_spawn_timer, crane_color, crane):
             if keys[pygame.K_DOWN]:
                 if ladder_rect.top <= player.y and ladder_rect.bottom >= player.y:  # Проверяем, находится ли игрок на лестнице
                     player.y += player_speed
-            if keys[pygame.K_ESCAPE]:
-                pygame.quit()
-                sys.exit()
+
 
         # Логика появления птиц
         bird_spawn_timer += clock.get_time()
